@@ -19,11 +19,22 @@ class DetailActivity : AppCompatActivity() {
         setContentView(R.layout.activity_detail)
 
         // TODO: Find the views for the screen
+        mediaImageView = findViewById(R.id.mediaImage)
+        titleTextView = findViewById(R.id.mediaTitle)
+        bylineTextView = findViewById(R.id.mediaByline)
+        abstractTextView = findViewById(R.id.mediaAbstract)
+
 
         // TODO: Get the extra from the Intent
+        val show = intent.getSerializableExtra(SHOW_EXTRA) as TVShow
 
         // TODO: Set the title, byline, and abstract information from the article
-
+        titleTextView.text = show.overview
+        bylineTextView.text = "First air date: " + show.firstAirDate
+        abstractTextView.text = "Rating: " + show.voteAverage.toString()
         // TODO: Load the media image
+        Glide.with(this)
+            .load(show.mediaImageUrl)
+            .into(mediaImageView)
     }
 }

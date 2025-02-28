@@ -20,13 +20,16 @@ fun createJson() = Json {
 }
 
 private const val TAG = "MainActivity/"
-private const val SEARCH_API_KEY = BuildConfig.API_KEY
-private const val ARTICLE_SEARCH_URL =
-    "https://api.nytimes.com/svc/search/v2/articlesearch.json?api-key=${SEARCH_API_KEY}"
+var SEARCH_API_KEY = BuildConfig.API_KEY
+var SHOW_SEARCH_URL =
+    "https://api.themoviedb.org/3/tv/popular?&api_key=${SEARCH_API_KEY}"
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var articlesRecyclerView: RecyclerView
+    private val shows = mutableListOf<TVShow>()
+
+    private lateinit var showsRecyclerView: RecyclerView
     private lateinit var binding: ActivityMainBinding
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,34 +38,48 @@ class MainActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
 
-        articlesRecyclerView = findViewById(R.id.articles)
-        // TODO: Set up ArticleAdapter with articles
+        showsRecyclerView = findViewById(R.id.shows)
+        // TODO: Set up ArticleAdapter with shows
+        val showAdapter = ShowAdapter(this, shows)
+        showsRecyclerView.adapter = showAdapter
 
-        articlesRecyclerView.layoutManager = LinearLayoutManager(this).also {
+        showsRecyclerView.layoutManager = LinearLayoutManager(this).also {
             val dividerItemDecoration = DividerItemDecoration(this, it.orientation)
-            articlesRecyclerView.addItemDecoration(dividerItemDecoration)
+            showsRecyclerView.addItemDecoration(dividerItemDecoration)
         }
 
         val client = AsyncHttpClient()
-        client.get(ARTICLE_SEARCH_URL, object : JsonHttpResponseHandler() {
+        client.get(SHOW_SEARCH_URL, object : JsonHttpResponseHandler() {
             override fun onFailure(
                 statusCode: Int,
                 headers: Headers?,
                 response: String?,
                 throwable: Throwable?
             ) {
-                Log.e(TAG, "Failed to fetch articles: $statusCode")
+                Log.e(TAG, "Failed to fetch shows: $statusCode")
             }
 
             override fun onSuccess(statusCode: Int, headers: Headers, json: JSON) {
-                Log.i(TAG, "Successfully fetched articles: $json")
+                Log.i(TAG, "Successfully fetched shows: $json")
                 try {
                     // TODO: Create the parsedJSON
+                    val parsedJson = createJson().decodeFromString(
+                        TVShowsResponse.serializer(),
+                        json.jsonObject.toString()
+                    )
+                    // TODO: Do something with the returned json (contains show information)
+                    parsedJson.results?.let { list ->
+                        shows.addAll(list)
+                    }
+                    // TODO: Save the shows and reload the screen
+                    parsedJson.results.let { list ->
+                        if (list != null) {
+                            shows.addAll(list)
+                        }
 
-                    // TODO: Do something with the returned json (contains article information)
-
-                    // TODO: Save the articles and reload the screen
-
+                        // Reload the screen
+                        showAdapter.notifyDataSetChanged()
+                    }
                 } catch (e: JSONException) {
                     Log.e(TAG, "Exception: $e")
                 }

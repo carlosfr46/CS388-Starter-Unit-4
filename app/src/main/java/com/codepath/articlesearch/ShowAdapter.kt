@@ -10,22 +10,24 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 
-const val ARTICLE_EXTRA = "ARTICLE_EXTRA"
-private const val TAG = "ArticleAdapter"
+const val SHOW_EXTRA = "SHOW_EXTRA"
+private const val TAG = "ShowAdapter"
 
-class ArticleAdapter(private val context: Context) :
-    RecyclerView.Adapter<ArticleAdapter.ViewHolder>() {
+class ShowAdapter(private val context: Context , private val shows: List<TVShow>) :
+    RecyclerView.Adapter<ShowAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(context).inflate(R.layout.item_article, parent, false)
+        val view = LayoutInflater.from(context).inflate(R.layout.item_show, parent, false)
         return ViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        // TODO: Get the individual article and bind to holder
+        val article = shows[position]
+        holder.bind(article)
     }
 
-    override fun getItemCount() = 0
+    override fun getItemCount() = shows.size
+
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView),
         View.OnClickListener {
@@ -38,12 +40,22 @@ class ArticleAdapter(private val context: Context) :
             itemView.setOnClickListener(this)
         }
 
-        // TODO: Write a helper method to help set up the onBindViewHolder method
+
+        fun bind(show: TVShow) {
+            titleTextView.text = show.showname
+            abstractTextView.text = "Click here to find out more (Limited selections)"
+
+            Glide.with(context)
+                .load(show.mediaImageUrl)
+                .into(mediaImageView)
+        }
+
 
         override fun onClick(v: View?) {
-            // TODO: Get selected article
-
-            // TODO: Navigate to Details screen and pass selected article
+            val show = shows[absoluteAdapterPosition]
+            val intent = Intent(context, DetailActivity::class.java)
+            intent.putExtra(SHOW_EXTRA, show)
+            context.startActivity(intent)
         }
     }
 }
